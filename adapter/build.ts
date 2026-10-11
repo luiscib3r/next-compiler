@@ -1,8 +1,12 @@
 import { dirname, join } from "node:path";
 import { execFileSync } from "node:child_process";
 import { rmSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import type { CompileParams } from "./compile";
 
 const OUTPUT_FILE = "build/server";
+
+const compileScript = join(dirname(fileURLToPath(import.meta.url)), "compile.ts");
 
 export type BuildServerParams = {
   serverEntryPoint: string;
@@ -23,7 +27,12 @@ export async function buildServer({
   const output = join(projectDir, OUTPUT_FILE);
 
   try {
-    execFileSync("bun", args({ input: serverEntryPoint, output, externals }), {
+    const params: CompileParams = {
+      input: serverEntryPoint,
+      output,
+      externals,
+    };
+    execFileSync("bun", [compileScript, JSON.stringify(params)], {
       stdio: "inherit",
     });
   } catch (err) {
@@ -35,45 +44,4 @@ export async function buildServer({
     }
     throw err;
   }
-}
-
-type ArgsParams = {
-  input: string;
-  output: string;
-  externals: string[];
-};
-
-function args({ input, output, externals }: ArgsParams): string[] {
-  const serverDir = dirname(input);
-  return [
-    "build",
-    input,
-    "--production",
-    "--compile-autoload-package-json",
-    "--compile",
-    "--asset",
-    join(serverDir, "app"),
-    "--asset",
-    join(serverDir, "next.config.json"),
-    "--minify",
-    "--external",
-    "webpack",
-    "--external",
-    "webpack/*",
-    "--external",
-    "next/dist/build/webpack/*",
-    "--external",
-    "sass",
-    "--external",
-    "critters",
-    ...externals.flatMap((name) => ["--external", name]),
-    "--define",
-    "process.env.TURBOPACK=1",
-    "--define",
-    "process.env.__NEXT_EXPERIMENTAL_REACT=",
-    "--define",
-    'process.env.NEXT_RUNTIME="nodejs"',
-    "--outfile",
-    output,
-  ];
 }
