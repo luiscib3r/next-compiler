@@ -3,8 +3,15 @@ import { createRequire } from "node:module";
 
 const require = createRequire(import.meta.url);
 
+// `BUILD_TARGET=node` builds the classic Next.js output (`Dockerfile.node`):
+// a standalone server for Node.js, without the adapter. By default the
+// adapter compiles the app into a single Bun binary (`Dockerfile`).
+const buildTarget = process.env.BUILD_TARGET === "node" ? "node" : "bun";
+
 const nextConfig: NextConfig = {
-  adapterPath: require.resolve("./adapter"),
+  ...(buildTarget === "node"
+    ? { output: "standalone" as const }
+    : { adapterPath: require.resolve("./adapter") }),
   /* config options here */
   experimental: {
     agentFeedback: true,

@@ -1,0 +1,68 @@
+# The classic way to run Next.js: the standalone output on Node.js. Same app
+# as `Dockerfile` (the Bun binary), to compare the two.
+#
+#   docker build -f Dockerfile.node -t next-node .
+#   docker run --rm -p 8080:8080 next-node
+#   bun run smoke
+#
+# `--target alpine` builds the variant from Next's official Docker example.
+
+# ---------- build ----------
+FROM node:24-trixie-slim AS builder
+WORKDIR /app
+
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# The project only has `bun.lock`. Bun installs the dependencies from it;
+# Node runs the build.
+COPY --from=oven/bun:1.4.3 /usr/local/bin/bun /usr/local/bin/bun
+COPY package.json bun.lock ./
+RUN bun install --frozen-lockfile
+
+COPY . .
+# `BUILD_TARGET=node` turns on `output: "standalone"` and turns off the adapter.
+RUN BUILD_TARGET=node node_modules/.bin/next build
+
+# `server.js` and the traced `node_modules` are in `.next/standalone`. The
+# standalone output leaves out the static files, which a CDN usually serves;
+# copy them so the server can serve them too.
+RUN cp -r public .next/standalone/ \
+ && cp -r .next/static .next/standalone/.next/
+
+# ---------- run (default): distroless ----------
+# No shell, no package manager, a non-root user: only Node.js and its runtime
+# libraries. The same family and Debian release as the Bun image.
+FROM gcr.io/distroless/nodejs24-debian13:nonroot AS distroless
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV PORT=8080
+# server.js listens on `HOSTNAME`. In Kubernetes, set it in the Deployment
+# too: the container runtime may set it to the pod name.
+ENV HOSTNAME=0.0.0.0
+
+# Next writes its caches (ISR, optimized images) to `.next/cache`.
+COPY --from=builder --chown=nonroot:nonroot /app/.next/standalone ./
+
+EXPOSE 8080
+# The distroless entrypoint is `node`.
+CMD ["server.js"]
+
+# ---------- run (alternative): alpine ----------
+FROM node:24-alpine AS alpine
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV PORT=8080
+ENV HOSTNAME=0.0.0.0
+
+COPY --from=builder --chown=node:node /app/.next/standalone ./
+
+USER node
+EXPOSE 8080
+CMD ["node", "server.js"]
+
+# The last stage is the default target.
+FROM distroless
