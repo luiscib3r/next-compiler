@@ -1,4 +1,10 @@
-import { cpSync, existsSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import {
+  cpSync,
+  existsSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 
@@ -80,7 +86,6 @@ function matchesPlatform(pkg: PackageJson): boolean {
 
 function libc(): string {
   const report = process.report?.getReport() as
-    | { header?: { glibcVersionRuntime?: string } }
-    | undefined;
+    { header?: { glibcVersionRuntime?: string } } | undefined;
   return report?.header?.glibcVersionRuntime ? "glibc" : "musl";
 }

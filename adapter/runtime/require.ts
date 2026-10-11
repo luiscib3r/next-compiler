@@ -143,7 +143,10 @@ function resolveExports(exports: unknown, subpath: string): string | undefined {
     const prefix = key.slice(0, star);
     const suffix = key.slice(star + 1);
     if (subpath.startsWith(prefix) && subpath.endsWith(suffix)) {
-      const match = subpath.slice(prefix.length, subpath.length - suffix.length);
+      const match = subpath.slice(
+        prefix.length,
+        subpath.length - suffix.length,
+      );
       return resolveTarget(value)?.replaceAll("*", match);
     }
   }
@@ -176,7 +179,9 @@ function resolveFile(path: string): string | undefined {
   }
   const packageJson = join(path, "package.json");
   if (isFile(packageJson)) {
-    const { main } = JSON.parse(readFileSync(packageJson, "utf8")) as PackageJson;
+    const { main } = JSON.parse(
+      readFileSync(packageJson, "utf8"),
+    ) as PackageJson;
     if (main) {
       const resolved = resolveFile(join(path, main));
       if (resolved) return resolved;

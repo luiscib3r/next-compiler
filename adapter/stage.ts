@@ -76,7 +76,10 @@ export function stageApp(
   // `app/favicon.ico/route.js`. The server still loads their modules, so also
   // stage every trace under `.next/server`.
   const serverDir = join(projectDir, ".next", "server");
-  for (const entry of readdirSync(serverDir, { recursive: true, encoding: "utf8" })) {
+  for (const entry of readdirSync(serverDir, {
+    recursive: true,
+    encoding: "utf8",
+  })) {
     const nft = join(serverDir, entry);
     if (!nft.endsWith(".nft.json")) continue;
     const trace = JSON.parse(readFileSync(nft, "utf8")) as NftTrace;
