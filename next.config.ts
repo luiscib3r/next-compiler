@@ -10,6 +10,21 @@ const nextConfig: NextConfig = {
     agentFeedback: true,
   },
   cacheComponents: true,
+  // Used by the /navigation test page.
+  async redirects() {
+    return [{ source: "/old-static", destination: "/static", permanent: true }];
+  },
+  async rewrites() {
+    return [{ source: "/rewrite-config", destination: "/static" }];
+  },
+  async headers() {
+    return [
+      {
+        source: "/static",
+        headers: [{ key: "x-config-header", value: "next.config" }],
+      },
+    ];
+  },
   partialPrefetching: true,
   turbopack: {
     rules: {
