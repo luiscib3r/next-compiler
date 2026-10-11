@@ -20,6 +20,9 @@ process.env.__NEXT_PRIVATE_STANDALONE_CONFIG = readFileSync(
 await startServer({
   dir: appDir,
   isDev: false,
-  hostname: "127.0.0.1",
+  // Listen on every interface: in a container, traffic arrives on the pod's
+  // network interface, not on loopback. Not `HOSTNAME`: Kubernetes sets it
+  // to the pod name.
+  hostname: process.env.HOST ?? "0.0.0.0",
   port,
 });
