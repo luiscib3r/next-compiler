@@ -36,7 +36,10 @@ function loadCommonJs(filename: string): unknown {
   try {
     const source = readFileSync(filename, "utf8");
     const wrapped = `(function (exports, require, module, __filename, __dirname) {\n${source}\n})`;
-    vm.runInThisContext(wrapped, { filename })(
+    vm.runInThisContext(wrapped, {
+      filename,
+      importModuleDynamically: (specifier) => bunfsImport(filename, specifier),
+    })(
       loaded.exports,
       bunfsRequire(filename),
       loaded,
@@ -48,6 +51,16 @@ function loadCommonJs(filename: string): unknown {
     throw error;
   }
   return loaded.exports;
+}
+
+// Code run through `vm` has no `import()` unless the script provides one.
+// Turbopack loads ESM externals (such as `next/dist/compiled/@vercel/og`) with
+// `import()`. Resolve the specifier like `require` does, then let Bun load the
+// file: Bun evaluates `.js` files in `/$bunfs` as ESM, which is what they are.
+function bunfsImport(filename: string, specifier: string) {
+  if (Module.isBuiltin(specifier)) return import(specifier);
+  const resolved = resolveFrom(dirname(filename), specifier);
+  return import(resolved ?? specifier);
 }
 
 // `createRequire` resolves relative and absolute paths in `/$bunfs`, but Bun
