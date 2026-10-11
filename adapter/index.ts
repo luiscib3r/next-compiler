@@ -30,12 +30,17 @@ function runtimeConfig(config: unknown): string {
     outputFileTracingRoot?: string;
     repoRoot?: string;
     turbopack?: { root?: string };
+    experimental?: { isrFlushToDisk?: boolean };
   };
   delete value.adapterPath;
   delete value.configFile;
   delete value.outputFileTracingRoot;
   delete value.repoRoot;
   if (value.turbopack) delete value.turbopack.root;
+  // The embedded filesystem is read-only. Do not flush the incremental cache or
+  // the image cache to `.next/cache`.
+  value.experimental ??= {};
+  value.experimental.isrFlushToDisk = false;
   return JSON.stringify(value);
 }
 

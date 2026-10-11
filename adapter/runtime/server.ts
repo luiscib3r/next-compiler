@@ -1,9 +1,13 @@
+import "./require";
+import "./fs";
+
 import { readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join } from "node:path";
 import { startServer } from "next/dist/server/lib/start-server";
 
-const runtimeDir = dirname(fileURLToPath(import.meta.url));
+// In the compiled binary this is `/$bunfs/root`, where `--asset` mounts `app/`
+// and `next.config.json`. Running the entry with Bun, it is the real directory.
+const runtimeDir = import.meta.dir;
 const appDir = join(runtimeDir, "app");
 const port = Number(process.env.PORT ?? 8080);
 

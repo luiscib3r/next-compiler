@@ -1,4 +1,4 @@
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { execFileSync } from "node:child_process";
 import { rmSync } from "node:fs";
 
@@ -40,12 +40,17 @@ type ArgsParams = {
 };
 
 function args({ input, output }: ArgsParams): string[] {
+  const serverDir = dirname(input);
   return [
     "build",
     input,
     "--production",
     "--compile-autoload-package-json",
     "--compile",
+    "--asset",
+    join(serverDir, "app"),
+    "--asset",
+    join(serverDir, "next.config.json"),
     "--minify",
     "--external",
     "webpack",
