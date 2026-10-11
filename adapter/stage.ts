@@ -2,6 +2,7 @@ import {
   copyFileSync,
   cpSync,
   mkdirSync,
+  readdirSync,
   readFileSync,
   statSync,
 } from "node:fs";
@@ -10,6 +11,18 @@ import { dirname, join, relative } from "node:path";
 type RequiredServerFiles = {
   files?: string[];
 };
+
+type NftTrace = {
+  files?: string[];
+};
+
+function isFile(path: string): boolean {
+  try {
+    return statSync(path).isFile();
+  } catch {
+    return false;
+  }
+}
 
 function copyProjectFile(projectDir: string, stageDir: string, source: string) {
   const destRel = relative(projectDir, source);
@@ -57,6 +70,24 @@ export function stageApp(
     mkdirSync(dirname(dest), { recursive: true });
     copyFileSync(source, dest);
     packages++;
+  }
+
+  // `outputs` omits routes that Next prerendered to static files, such as
+  // `app/favicon.ico/route.js`. The server still loads their modules, so also
+  // stage every trace under `.next/server`.
+  const serverDir = join(projectDir, ".next", "server");
+  for (const entry of readdirSync(serverDir, { recursive: true, encoding: "utf8" })) {
+    const nft = join(serverDir, entry);
+    if (!nft.endsWith(".nft.json")) continue;
+    const trace = JSON.parse(readFileSync(nft, "utf8")) as NftTrace;
+    for (const file of trace.files ?? []) {
+      const source = join(dirname(nft), file);
+      const dest = relative(repoRoot, source);
+      if (seen.has(dest) || !isFile(source)) continue;
+      seen.add(dest);
+      copyProjectFile(projectDir, stageDir, source);
+      packages++;
+    }
   }
 
   const required = JSON.parse(
