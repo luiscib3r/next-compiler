@@ -6,18 +6,28 @@ import type { TracedAsset } from "./stage";
 
 // Packages with native addons. Bun leaves them out of the bundle, and the
 // runtime extracts them to disk the first time the server requires them.
-const NATIVE_PACKAGES = ["sharp"];
+const IMAGE_OPTIMIZER = "sharp";
+const NATIVE_PACKAGES = [IMAGE_OPTIMIZER];
 
 export default {
   name: "k8s-adapter",
   async onBuildComplete({ projectDir, repoRoot, distDir, outputs, config }) {
     console.log("🚀 Building server for Kubernetes deployment...");
+    // With `images.unoptimized`, Next never runs sharp: leave its binaries out
+    // of the binary. It stays external either way, or Bun would bundle it
+    // from Next's image optimizer.
+    const excludedPackages = config.images?.unoptimized
+      ? [IMAGE_OPTIMIZER]
+      : [];
     const { serverEntryPoint } = await generateServer({
       distDir,
       projectDir,
       repoRoot,
       assets: tracedAssets(outputs, repoRoot),
-      nativePackages: NATIVE_PACKAGES,
+      nativePackages: NATIVE_PACKAGES.filter(
+        (name) => !excludedPackages.includes(name),
+      ),
+      excludedPackages,
       config: runtimeConfig(config),
     });
     await buildServer({

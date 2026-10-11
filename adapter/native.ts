@@ -91,6 +91,31 @@ export function stageNativePackages(
   return manifest;
 }
 
+// Removes packages the server never loads, with their prebuilt binaries
+// (their optional dependencies). Traces may have staged them anyway: next/og
+// imports sharp when it is available. Their regular dependencies stay, since
+// other traced files may use them.
+export function removeNativePackages(
+  projectDir: string,
+  stageDir: string,
+  names: string[],
+): string[] {
+  const removed: string[] = [];
+  for (const name of names) {
+    const pkgPath = join(projectDir, "node_modules", name, "package.json");
+    const pkg = existsSync(pkgPath)
+      ? (JSON.parse(readFileSync(pkgPath, "utf8")) as PackageJson)
+      : {};
+    for (const target of [name, ...Object.keys(pkg.optionalDependencies ?? {})]) {
+      const dir = join(stageDir, "node_modules", target);
+      if (!existsSync(dir)) continue;
+      rmSync(dir, { recursive: true, force: true });
+      removed.push(target);
+    }
+  }
+  return removed;
+}
+
 function matchesPlatform(pkg: PackageJson): boolean {
   if (pkg.os && !pkg.os.includes(process.platform)) return false;
   if (pkg.cpu && !pkg.cpu.includes(process.arch)) return false;

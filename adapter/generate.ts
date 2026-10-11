@@ -1,7 +1,7 @@
 import { cpSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { stageNativePackages } from "./native";
+import { removeNativePackages, stageNativePackages } from "./native";
 import { stageApp, type TracedAsset } from "./stage";
 
 const DIST_DIR = "k8s-server";
@@ -20,6 +20,8 @@ export type GenerateServerParams = {
   assets: TracedAsset[];
   /** Packages with native addons, extracted to disk at runtime. */
   nativePackages: string[];
+  /** Native packages the server never loads. Removed from the staged app. */
+  excludedPackages: string[];
   /** Serialized Next config. The runtime reads it and does not load `next.config.ts`. */
   config: string;
 };
@@ -46,6 +48,14 @@ export async function generateServer(
     params.assets,
   );
   console.log(`staged ${packages} traced files at ${appDir}`);
+  const removed = removeNativePackages(
+    params.projectDir,
+    appDir,
+    params.excludedPackages,
+  );
+  if (removed.length) {
+    console.log(`removed unused native packages: ${removed.join(", ")}`);
+  }
   const native = stageNativePackages(
     params.projectDir,
     appDir,
