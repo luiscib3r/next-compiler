@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# k6 summaries while a load test runs
+/loadtest/results/tmp
