@@ -38,6 +38,7 @@ export function stageNativePackages(
   roots: string[],
 ): NativeManifest {
   const packages = new Set<string>();
+  const rejected = new Set<string>();
   const visit = (name: string, optional: boolean) => {
     if (packages.has(name)) return;
     const dir = join(projectDir, "node_modules", name);
@@ -49,7 +50,10 @@ export function stageNativePackages(
     const pkg = JSON.parse(readFileSync(pkgPath, "utf8")) as PackageJson;
     // Optional dependencies hold the prebuilt binaries for each platform.
     // Keep only the ones this platform can load.
-    if (optional && !matchesPlatform(pkg)) return;
+    if (optional && !matchesPlatform(pkg)) {
+      rejected.add(name);
+      return;
+    }
     packages.add(name);
     for (const dep of Object.keys(pkg.dependencies ?? {})) visit(dep, false);
     for (const dep of Object.keys(pkg.optionalDependencies ?? {})) {
@@ -65,6 +69,16 @@ export function stageNativePackages(
     cpSync(join(projectDir, "node_modules", name), dest, {
       recursive: true,
       dereference: true,
+    });
+  }
+
+  // Traces can still bring in the binaries for other platforms. Next traces
+  // every installed variant (for example, the musl builds of sharp on a glibc
+  // system), and they can never load here.
+  for (const name of rejected) {
+    rmSync(join(stageDir, "node_modules", name), {
+      recursive: true,
+      force: true,
     });
   }
 

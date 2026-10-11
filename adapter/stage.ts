@@ -24,9 +24,15 @@ function isFile(path: string): boolean {
   }
 }
 
+// Files the production server never reads: source maps (stack traces show
+// the minified positions) and the dependency traces used to stage the app.
+function isBuildOnly(path: string): boolean {
+  return path.endsWith(".map") || path.endsWith(".nft.json");
+}
+
 function copyProjectFile(projectDir: string, stageDir: string, source: string) {
   const destRel = relative(projectDir, source);
-  if (destRel.startsWith("..")) return;
+  if (destRel.startsWith("..") || isBuildOnly(source)) return;
   const dest = join(stageDir, destRel);
   mkdirSync(dirname(dest), { recursive: true });
   copyFileSync(source, dest);
@@ -53,6 +59,7 @@ export function stageApp(
     if (seen.has(asset.dest)) continue;
     seen.add(asset.dest);
     const source = asset.source;
+    if (isBuildOnly(source)) continue;
     try {
       if (!statSync(source).isFile()) continue;
     } catch {
@@ -108,6 +115,7 @@ export function stageApp(
     join(stageDir, ".next", "server"),
     {
       recursive: true,
+      filter: (source) => !isBuildOnly(source),
     },
   );
   cpSync(
