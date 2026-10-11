@@ -2,6 +2,7 @@ import { existsSync, readFileSync, statSync } from "node:fs";
 import Module, { createRequire } from "node:module";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 import vm from "node:vm";
+import { isNative, requireNative } from "./native";
 
 const original = Module.prototype.require;
 
@@ -12,6 +13,7 @@ type CommonJsModule = {
 const modules = new Map<string, CommonJsModule>();
 
 Module.prototype.require = function (id: string) {
+  if (isNative(id)) return requireNative(id);
   if (id.includes("$bunfs")) return loadFile(id);
   return original.call(this, id);
 };
@@ -55,6 +57,7 @@ function bunfsRequire(filename: string) {
   const fallback = createRequire(filename);
   const require = (id: string) => {
     if (Module.isBuiltin(id)) return fallback(id);
+    if (isNative(id)) return requireNative(id);
     const resolved = resolveFrom(dir, id);
     if (!resolved) return fallback(id);
     return loadFile(resolved);

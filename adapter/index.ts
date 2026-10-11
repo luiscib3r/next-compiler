@@ -4,6 +4,10 @@ import { buildServer } from "./build";
 import { relative } from "node:path";
 import type { TracedAsset } from "./stage";
 
+// Packages with native addons. Bun leaves them out of the bundle, and the
+// runtime extracts them to disk the first time the server requires them.
+const NATIVE_PACKAGES = ["sharp"];
+
 export default {
   name: "k8s-adapter",
   async onBuildComplete({ projectDir, repoRoot, distDir, outputs, config }) {
@@ -13,11 +17,13 @@ export default {
       projectDir,
       repoRoot,
       assets: tracedAssets(outputs, repoRoot),
+      nativePackages: NATIVE_PACKAGES,
       config: runtimeConfig(config),
     });
     await buildServer({
       serverEntryPoint,
       projectDir,
+      externals: NATIVE_PACKAGES,
     });
   },
 } as NextAdapter;

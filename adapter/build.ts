@@ -7,11 +7,14 @@ const OUTPUT_FILE = "build/server";
 export type BuildServerParams = {
   serverEntryPoint: string;
   projectDir: string;
+  /** Packages the bundle must not include. The runtime loads them. */
+  externals: string[];
 };
 
 export async function buildServer({
   serverEntryPoint,
   projectDir,
+  externals,
 }: BuildServerParams) {
   const buildDir = join(projectDir, "build");
   // Clean build directory before building server
@@ -20,7 +23,7 @@ export async function buildServer({
   const output = join(projectDir, OUTPUT_FILE);
 
   try {
-    execFileSync("bun", args({ input: serverEntryPoint, output }), {
+    execFileSync("bun", args({ input: serverEntryPoint, output, externals }), {
       stdio: "inherit",
     });
   } catch (err) {
@@ -37,9 +40,10 @@ export async function buildServer({
 type ArgsParams = {
   input: string;
   output: string;
+  externals: string[];
 };
 
-function args({ input, output }: ArgsParams): string[] {
+function args({ input, output, externals }: ArgsParams): string[] {
   const serverDir = dirname(input);
   return [
     "build",
@@ -62,6 +66,7 @@ function args({ input, output }: ArgsParams): string[] {
     "sass",
     "--external",
     "critters",
+    ...externals.flatMap((name) => ["--external", name]),
     "--define",
     "process.env.TURBOPACK=1",
     "--define",

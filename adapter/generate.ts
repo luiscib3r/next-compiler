@@ -1,6 +1,7 @@
 import { cpSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { stageNativePackages } from "./native";
 import { stageApp, type TracedAsset } from "./stage";
 
 const DIST_DIR = "k8s-server";
@@ -17,6 +18,8 @@ export type GenerateServerParams = {
   projectDir: string;
   repoRoot: string;
   assets: TracedAsset[];
+  /** Packages with native addons, extracted to disk at runtime. */
+  nativePackages: string[];
   /** Serialized Next config. The runtime reads it and does not load `next.config.ts`. */
   config: string;
 };
@@ -43,6 +46,14 @@ export async function generateServer(
     params.assets,
   );
   console.log(`staged ${packages} traced files at ${appDir}`);
+  const native = stageNativePackages(
+    params.projectDir,
+    appDir,
+    params.nativePackages,
+  );
+  if (native.packages.length) {
+    console.log(`staged native packages: ${native.packages.join(", ")}`);
+  }
 
   const serverEntryPoint = join(serverDir, SERVER_ENTRY_POINT);
   writeFileSync(join(serverDir, "next.config.json"), params.config);
