@@ -109,9 +109,12 @@ function sampleUsage() {
   );
   (async () => {
     const decoder = new TextDecoder();
-    for await (const chunk of proc.stdout) {
+    const reader = proc.stdout.getReader();
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
       // `docker stats` redraws with ANSI escapes; keep the data lines.
-      for (const raw of decoder.decode(chunk).split(/\r?\n/)) {
+      for (const raw of decoder.decode(value).split(/\r?\n/)) {
         const line = raw.replace(/\x1b\[[0-9;]*[A-Za-z]/g, "").trim();
         if (line.includes("|")) samples.push(parseUsage(line));
       }
