@@ -24,6 +24,11 @@ spec:
           env:
             - name: REDIS_URI
               value: redis://redis:6379
+            # Traces to Jaeger over OTLP/HTTP (see instrumentation.ts).
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://jaeger:4318
+            - name: OTEL_SERVICE_NAME
+              value: next-node
             # The standalone server listens on `HOSTNAME`, and Kubernetes sets
             # it to the pod name, so it would listen only on the pod's IP.
             # The binary listens on 0.0.0.0 and reads `HOST` instead.

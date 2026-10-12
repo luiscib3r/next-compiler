@@ -26,13 +26,15 @@ spec:
               name: otlp-grpc
             - containerPort: 4318
               name: otlp-http
+          # In-memory storage keeps every span: under load (thousands of
+          # requests per second, ~25 spans each) 512Mi ran out in seconds.
           resources:
             requests:
               cpu: 100m
-              memory: 128Mi
+              memory: 256Mi
             limits:
               cpu: "1"
-              memory: 512Mi
+              memory: 2Gi
 ---
 apiVersion: v1
 kind: Service

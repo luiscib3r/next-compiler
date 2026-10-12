@@ -23,6 +23,11 @@ spec:
           env:
             - name: REDIS_URI
               value: redis://redis:6379
+            # Traces to Jaeger over OTLP/HTTP (see instrumentation.ts).
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://jaeger:4318
+            - name: OTEL_SERVICE_NAME
+              value: next-bun
           # Half a CPU per replica: 8 replicas take 4 of the node's 10 CPUs,
           # leaving room for k6 and Redis during load tests, so the tests
           # measure the app and not a saturated node.
