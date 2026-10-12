@@ -2,6 +2,7 @@ import { existsSync, readFileSync, statSync } from "node:fs";
 import Module, { createRequire } from "node:module";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 import vm from "node:vm";
+import { externals } from "./externals";
 import { isNative, requireNative } from "./native";
 
 const original = Module.prototype.require;
@@ -71,6 +72,9 @@ function bunfsRequire(filename: string) {
   const require = (id: string) => {
     if (Module.isBuiltin(id)) return fallback(id);
     if (isNative(id)) return requireNative(id);
+    // One instance of each Next `.external` module: the bundled one.
+    const external = externals[id.replace(/\.js$/, "")];
+    if (external) return external();
     const resolved = resolveFrom(dir, id);
     if (!resolved) return fallback(id);
     return loadFile(resolved);
