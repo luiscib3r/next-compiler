@@ -4,6 +4,9 @@
 //
 //   tilt up                                       # or `tilt ci`
 //   bun loadtest/k8s.ts                           # both variants, every scenario
+//
+// The Job is `k8s/loadtest/k6-job.yaml`; Tilt creates the ConfigMap with the
+// k6 script and has a manual `loadtest` button that runs this file.
 //   bun loadtest/k8s.ts --variants next-bun --scenarios static --repeat 3
 //
 // One variant runs at a time, with the others scaled to zero, so they never
@@ -11,7 +14,7 @@
 // Redis is flushed. Pod memory (`anon`) and CPU come from the Docker API:
 // OrbStack and Docker Desktop run the pods on the local Docker daemon.
 
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { parseArgs } from "node:util";
 import { median, sampleUsage, stats, usage, type Usage } from "./lib";
@@ -32,10 +35,13 @@ const { values } = parseArgs({
 });
 
 const NAMESPACE = "next-compiler";
-const K6_IMAGE = "grafana/k6:2.3.0";
 const SUMMARY_MARKER = "@@K6_SUMMARY@@";
 const loadtestDir = import.meta.dir;
 const allVariants = ["next-bun", "next-node"];
+const jobTemplate = readFileSync(
+  join(loadtestDir, "..", "k8s", "loadtest", "k6-job.yaml"),
+  "utf8",
+);
 
 type Result = {
   variant: string;
@@ -130,44 +136,22 @@ async function runK6(
   scenario: string,
   duration: string,
 ) {
-  const job = {
-    apiVersion: "batch/v1",
-    kind: "Job",
-    metadata: { name, namespace: NAMESPACE },
-    spec: {
-      backoffLimit: 0,
-      ttlSecondsAfterFinished: 300,
-      template: {
-        spec: {
-          restartPolicy: "Never",
-          containers: [
-            {
-              name: "k6",
-              image: K6_IMAGE,
-              imagePullPolicy: "IfNotPresent",
-              args: ["run", "--quiet", "/scripts/script.js"],
-              env: [
-                { name: "BASE_URL", value: `http://${variant}` },
-                { name: "SCENARIO", value: scenario },
-                { name: "VUS", value: values.vus },
-                { name: "DURATION", value: duration },
-                { name: "SUMMARY", value: "stdout" },
-              ],
-              // Enough to generate the load without competing with the pods.
-              resources: {
-                requests: { cpu: "1", memory: "256Mi" },
-                limits: { cpu: "2", memory: "1Gi" },
-              },
-              volumeMounts: [{ name: "scripts", mountPath: "/scripts" }],
-            },
-          ],
-          volumes: [{ name: "scripts", configMap: { name: "k6-script" } }],
-        },
-      },
-    },
+  // The Job lives in the repo (`k8s/loadtest/k6-job.yaml`); fill its
+  // variables, as `envsubst` would.
+  const vars: Record<string, string> = {
+    JOB_NAME: name,
+    TARGET: variant,
+    SCENARIO: scenario,
+    VUS: values.vus!,
+    DURATION: duration,
   };
+  const job = jobTemplate.replace(/\$\{(\w+)\}/g, (_, key: string) => {
+    if (!(key in vars))
+      throw new Error(`k6-job.yaml uses an unknown variable: ${key}`);
+    return vars[key];
+  });
   await kubectl("delete", "job", name, "--ignore-not-found");
-  await sh(["kubectl", "apply", "-f", "-"], { input: JSON.stringify(job) });
+  await sh(["kubectl", "apply", "-f", "-"], { input: job });
   await kubectl(
     "wait",
     "--for=condition=complete",
@@ -307,20 +291,18 @@ function report(results: Result[]): string {
   return lines.join("\n");
 }
 
-// The k6 script reaches the Jobs as a ConfigMap.
-const configMap = await sh([
-  "kubectl",
-  "-n",
-  NAMESPACE,
-  "create",
-  "configmap",
-  "k6-script",
-  `--from-file=script.js=${join(loadtestDir, "k6", "script.js")}`,
-  "--dry-run=client",
-  "-o",
-  "yaml",
-]);
-await sh(["kubectl", "apply", "-f", "-"], { input: configMap });
+// The k6 script reaches the Jobs through the `k6-script` ConfigMap, which
+// the Tiltfile creates (and updates when the script changes).
+const hasScript = await sh(
+  ["kubectl", "-n", NAMESPACE, "get", "configmap", "k6-script", "-o", "name"],
+  { quiet: true },
+);
+if (!hasScript.trim()) {
+  console.error(
+    "⨯ No k6-script ConfigMap in the cluster: run `tilt up` (or `tilt ci`) first.",
+  );
+  process.exit(1);
+}
 
 const results: Result[] = [];
 const scenarios = values.scenarios!.split(",");

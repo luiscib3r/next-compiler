@@ -1,0 +1,56 @@
+# One k6 run inside the cluster, against a Service, so kube-proxy spreads the
+# connections across the replicas (`kubectl port-forward svc/...` would send
+# everything to a single pod). `loadtest/k8s.ts` fills the variables and
+# applies it once per run. By hand:
+#
+#   JOB_NAME=k6-static TARGET=next-bun SCENARIO=static VUS=64 DURATION=30s \
+#     envsubst < k8s/loadtest/k6-job.yaml | kubectl apply -f -
+#   kubectl -n next-compiler logs -f job/k6-static
+#
+# The script comes from the `k6-script` ConfigMap, which the Tiltfile creates
+# from `loadtest/k6/script.js`.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ${JOB_NAME}
+  namespace: next-compiler
+spec:
+  backoffLimit: 0
+  ttlSecondsAfterFinished: 300
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: k6
+          image: grafana/k6:2.3.0
+          imagePullPolicy: IfNotPresent
+          args: ["run", "--quiet", "/scripts/script.js"]
+          env:
+            - name: BASE_URL
+              value: "http://${TARGET}"
+            - name: SCENARIO
+              value: "${SCENARIO}"
+            - name: VUS
+              value: "${VUS}"
+            - name: DURATION
+              value: "${DURATION}"
+            # Print the summary after a marker, for the runner to read from
+            # the Job's logs.
+            - name: SUMMARY
+              value: stdout
+          # Enough to generate the load without competing with the app pods
+          # (8 replicas x 500m = 4 of the node's 10 CPUs).
+          resources:
+            requests:
+              cpu: "1"
+              memory: 256Mi
+            limits:
+              cpu: "2"
+              memory: 1Gi
+          volumeMounts:
+            - name: scripts
+              mountPath: /scripts
+      volumes:
+        - name: scripts
+          configMap:
+            name: k6-script

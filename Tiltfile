@@ -6,7 +6,8 @@
 #
 # Everything lives in the `next-compiler` namespace. Port forwards reach one
 # pod only; load tests must run inside the cluster and go through the
-# Services (`next-bun`, `next-node`), which balance across replicas.
+# Services (`next-bun`, `next-node`), which balance across replicas: see the
+# `loadtest` resource at the end.
 
 allow_k8s_contexts(['orbstack', 'docker-desktop', 'kind-kind', 'minikube'])
 
@@ -51,4 +52,31 @@ k8s_resource(
     labels=['apps'],
     resource_deps=['redis'],
     port_forwards=['18081:8080'],
+)
+
+# Load tests. k6 runs as a Job inside the cluster (`k8s/loadtest/k6-job.yaml`)
+# against the Services. Its script reaches the Job through this ConfigMap,
+# rebuilt whenever the script changes.
+watch_file('loadtest/k6/script.js')
+k8s_yaml(local(
+    'kubectl create configmap k6-script --namespace next-compiler '
+    + '--from-file=script.js=loadtest/k6/script.js --dry-run=client -o yaml',
+    quiet=True,
+))
+k8s_resource(
+    new_name='k6-script',
+    objects=['k6-script:configmap'],
+    labels=['loadtest'],
+)
+
+# The whole suite, both variants, on demand: a button in the Tilt UI (or
+# `tilt trigger loadtest`). It never runs on `tilt up`. Results land in
+# `loadtest/results/k8s-*.{json,md}`.
+local_resource(
+    'loadtest',
+    cmd='bun loadtest/k8s.ts --repeat 2',
+    auto_init=False,
+    trigger_mode=TRIGGER_MODE_MANUAL,
+    resource_deps=['next-bun', 'next-node', 'k6-script'],
+    labels=['loadtest'],
 )
