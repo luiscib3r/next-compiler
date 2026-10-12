@@ -1,3 +1,5 @@
+// The binary's entry. The first two imports patch Node APIs and must run
+// before anything loads Next.
 import "./require";
 import "./fs";
 
@@ -6,8 +8,9 @@ import { join } from "node:path";
 import { startServer } from "next/dist/server/lib/start-server";
 import { enableRedisCache } from "./cache";
 
-// In the compiled binary this is `/$bunfs/root`, where `--asset` mounts `app/`
-// and `next.config.json`. Running the entry with Bun, it is the real directory.
+// In the compiled binary this is `/$bunfs/root`, where `compile.assets`
+// embeds `app/` and `next.config.json`. Running the entry with Bun, it is the
+// real directory.
 const runtimeDir = import.meta.dir;
 const appDir = join(runtimeDir, "app");
 const port = Number(process.env.PORT ?? 8080);

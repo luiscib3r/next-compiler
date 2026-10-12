@@ -1,6 +1,8 @@
-import { dirname, join } from "node:path";
+// Step 3 of the adapter: compile. `next build` may run on Node, which has no
+// `Bun.build`, so this runs `compile.ts` in a `bun` child process.
 import { execFileSync } from "node:child_process";
 import { rmSync } from "node:fs";
+import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { CompileParams } from "./compile";
 
@@ -21,7 +23,6 @@ export async function buildServer({
   externals,
 }: BuildServerParams) {
   const buildDir = join(projectDir, "build");
-  // Clean build directory before building server
   rmSync(buildDir, { recursive: true, force: true });
 
   const output = join(projectDir, OUTPUT_FILE);

@@ -1,8 +1,17 @@
-import type { CacheEntry, CacheHandler } from "next/dist/server/lib/cache-handlers/types";
+import type {
+  CacheEntry,
+  CacheHandler,
+} from "next/dist/server/lib/cache-handlers/types";
 import { decode, encode } from "./codec";
 import { debug } from "./debug";
 import { withRedis } from "./redis";
-import { entryKey, isExpired, isStale, readTagMarks, writeTagMarks } from "./tags";
+import {
+  entryKey,
+  isExpired,
+  isStale,
+  readTagMarks,
+  writeTagMarks,
+} from "./tags";
 
 // The handler behind `"use cache"`. It mirrors Next's built-in handler
 // (`cache-handlers/default.ts`), with Redis instead of an in-memory LRU.
@@ -69,7 +78,10 @@ export const useCacheHandler: CacheHandler = {
       const stored: StoredEntry = { ...entry, value };
       const bytes = encode(stored);
       // Next discards an entry past `expire` anyway; the TTL only cleans it up.
-      const ttl = Number.isFinite(entry.expire) && entry.expire > 0 ? Math.ceil(entry.expire) : 0;
+      const ttl =
+        Number.isFinite(entry.expire) && entry.expire > 0
+          ? Math.ceil(entry.expire)
+          : 0;
       await withRedis(
         (redis) =>
           ttl

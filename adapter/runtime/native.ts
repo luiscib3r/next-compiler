@@ -20,6 +20,10 @@ type NativeManifest = {
 const appDir = join(import.meta.dir, "app");
 
 const manifest = readManifest();
+// Packages whose load failure was already logged.
+const reported = new Set<string>();
+// The directory the packages were extracted to, once they are.
+let extracted: string | undefined;
 
 function readManifest(): NativeManifest {
   try {
@@ -55,10 +59,6 @@ export function requireNative(id: string): unknown {
     throw error;
   }
 }
-
-const reported = new Set<string>();
-
-let extracted: string | undefined;
 
 function extract(): string {
   if (extracted) return extracted;

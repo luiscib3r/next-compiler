@@ -5,6 +5,23 @@ import vm from "node:vm";
 import { externals } from "./externals";
 import { isNative, requireNative } from "./native";
 
+// CommonJS loading for the files embedded in `/$bunfs`.
+//
+// Next is bundled into the binary, but much of what it loads at runtime is
+// not: the route chunks Turbopack wrote to `.next/server`, the manifests and
+// the traced packages in `node_modules`. They are files in `/$bunfs`, and Bun
+// cannot load them as Node would: it evaluates them as ES modules and does
+// not search `node_modules` there. Two entry points cover every way in:
+//
+//   - `Module.prototype.require`: the bundled Next code (and anything else
+//     using Node's loader) requires a chunk or a manifest by its `/$bunfs`
+//     path, or a native package by name.
+//   - `bunfsRequire`: the `require` handed to each file this module runs. It
+//     resolves bare names by searching `node_modules` in `/$bunfs` and gives
+//     every chunk the bundled instance of Next's `.external` modules.
+//
+// Each file runs once (`modules`), as Node caches modules by path.
+
 const original = Module.prototype.require;
 
 type CommonJsModule = {

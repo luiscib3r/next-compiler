@@ -120,8 +120,9 @@ export class RedisIncrementalCacheHandler implements CacheHandler {
     debug("revalidateTag", list, durations);
     await writeTagMarks(list, durations);
     // This process reads the marks again on its next `get`; update it now too.
-    for (const [tag, mark] of await readTagMarks(list))
+    for (const [tag, mark] of await readTagMarks(list)) {
       tagsManifest.set(tag, mark);
+    }
   }
 
   resetRequestCache() {}
@@ -136,7 +137,8 @@ function entryTags(entry: CacheHandlerValue, ctx: GetContext): string[] {
   const header = value?.headers?.["x-next-cache-tags"];
   if (typeof header === "string") tags.push(...header.split(","));
   if ("tags" in ctx && Array.isArray(ctx.tags)) tags.push(...ctx.tags);
-  if ("softTags" in ctx && Array.isArray(ctx.softTags))
+  if ("softTags" in ctx && Array.isArray(ctx.softTags)) {
     tags.push(...ctx.softTags);
+  }
   return tags.filter(Boolean);
 }
