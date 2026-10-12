@@ -1,5 +1,6 @@
 import {
   cpSync,
+  mkdirSync,
   readdirSync,
   readFileSync,
   rmSync,
@@ -72,6 +73,7 @@ export async function generateServer(
     console.log(`staged native packages: ${native.packages.join(", ")}`);
   }
 
+  writeCacheHandlerShim(appDir);
   const externals = writeExternals(appDir, serverDir);
   console.log(`bundled ${externals} Next .external modules as single instances`);
 
@@ -79,6 +81,18 @@ export async function generateServer(
   writeFileSync(join(serverDir, "next.config.json"), params.config);
 
   return { serverEntryPoint };
+}
+
+// `next.config.cacheHandler` must be a module path, which Next loads with
+// `import()`. This module re-exports the Redis handler compiled into the
+// binary (`runtime/cache/index.ts` registers it and points the config here).
+function writeCacheHandlerShim(appDir: string) {
+  const dir = join(appDir, ".next-compiler");
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(
+    join(dir, "cache-handler.mjs"),
+    'export default globalThis[Symbol.for("next-compiler.incremental-cache-handler")];\n',
+  );
 }
 
 const EXTERNAL_REQUIRE = /require\("(next\/dist\/[^"]+\.external)(?:\.js)?"\)/g;
