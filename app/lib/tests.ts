@@ -278,6 +278,21 @@ export const groups: TestGroup[] = [
         ],
       },
       {
+        path: "/api/revalidate",
+        title: "revalidateTag desde un route handler",
+        description: "POST con ?tag= invalida un tag; con &expire, de inmediato.",
+        adapter:
+          "Con Redis, la invalidación llega a todas las réplicas del mismo build.",
+        checks: [
+          {
+            path: "/api/revalidate?tag=smoke-test",
+            method: "POST",
+            status: 200,
+            contains: '"revalidated":"smoke-test"',
+          },
+        ],
+      },
+      {
         path: "/api/stream",
         title: "Respuesta en stream",
         description: "ReadableStream que emite cinco chunks.",
