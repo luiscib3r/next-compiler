@@ -3,6 +3,9 @@
 #
 #   docker build -f Dockerfile.node -t next-node .
 #   docker run --rm -p 8080:8080 next-node
+#
+#   docker build -f Dockerfile.node --build-arg BUILD_CACHE=redis -t next-node-redis .
+#   docker run --rm -p 8080:8080 -e REDIS_URI=redis://redis:6379 next-node-redis
 #   bun run smoke
 #
 # `--target alpine` builds the variant from Next's official Docker example.
@@ -21,7 +24,10 @@ RUN bun install --frozen-lockfile
 
 COPY . .
 # `BUILD_TARGET=node` turns on `output: "standalone"` and turns off the adapter.
-RUN BUILD_TARGET=node node_modules/.bin/next build
+# `--build-arg BUILD_CACHE=redis` adds the Redis cache handlers, which read
+# `REDIS_URI` at runtime.
+ARG BUILD_CACHE=""
+RUN BUILD_TARGET=node BUILD_CACHE=$BUILD_CACHE node_modules/.bin/next build
 
 # `server.js` and the traced `node_modules` are in `.next/standalone`. The
 # standalone output leaves out the static files, which a CDN usually serves;
