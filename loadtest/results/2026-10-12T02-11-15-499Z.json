@@ -1,0 +1,475 @@
+{
+  "config": {
+    "variants": "bun-redis=next-compiler+redis,node-redis=next-node-redis+redis",
+    "scenarios": "static,dynamic,cache,api,asset,isr-new,image",
+    "vus": "32",
+    "duration": "30s",
+    "warmup": "10s",
+    "cpus": "1",
+    "memory": "1g"
+  },
+  "results": [
+    {
+      "variant": "bun-redis",
+      "image": "next-compiler",
+      "redis": true,
+      "scenario": "static",
+      "startupMs": 419.59899999999993,
+      "idleMemoryMiB": 143.4,
+      "requestsPerSecond": 3721.6238639981802,
+      "latencyMs": {
+        "med": 8.170631,
+        "p95": 11.6505666,
+        "p99": 15.773361999999999,
+        "max": 67.906343
+      },
+      "failedRate": 0,
+      "checksFailed": 0,
+      "memoryMiB": {
+        "avg": 230.10163934426245,
+        "max": 238.4
+      },
+      "cpuPercent": {
+        "avg": 85.94049180327873,
+        "max": 93.68
+      },
+      "redisMemoryMiB": {
+        "avg": 50.11908474576274,
+        "max": 52.46
+      },
+      "redisCpuPercent": {
+        "avg": 0.7033898305084748,
+        "max": 0.8
+      }
+    },
+    {
+      "variant": "node-redis",
+      "image": "next-node-redis",
+      "redis": true,
+      "scenario": "static",
+      "startupMs": 605,
+      "idleMemoryMiB": 153.1,
+      "requestsPerSecond": 2100.0060353407785,
+      "latencyMs": {
+        "med": 13.187385,
+        "p95": 29.404355999999964,
+        "p99": 46.61321008,
+        "max": 73.299015
+      },
+      "failedRate": 0,
+      "checksFailed": 0,
+      "memoryMiB": {
+        "avg": 208.9344262295085,
+        "max": 216.8
+      },
+      "cpuPercent": {
+        "avg": 96.90622950819673,
+        "max": 102.83
+      },
+      "redisMemoryMiB": {
+        "avg": 5.754983050847455,
+        "max": 5.852
+      },
+      "redisCpuPercent": {
+        "avg": 0.5861016949152542,
+        "max": 0.84
+      }
+    },
+    {
+      "variant": "bun-redis",
+      "image": "next-compiler",
+      "redis": true,
+      "scenario": "dynamic",
+      "startupMs": 395.74295800000255,
+      "idleMemoryMiB": 136.8,
+      "requestsPerSecond": 659.3062321090149,
+      "latencyMs": {
+        "med": 45.626014,
+        "p95": 75.24408999999999,
+        "p99": 97.94255362,
+        "max": 133.792893
+      },
+      "failedRate": 0,
+      "checksFailed": 0,
+      "memoryMiB": {
+        "avg": 308.46557377049174,
+        "max": 323.3
+      },
+      "cpuPercent": {
+        "avg": 88.57852459016392,
+        "max": 100.08
+      },
+      "redisMemoryMiB": {
+        "avg": 42.38032786885243,
+        "max": 45.36
+      },
+      "redisCpuPercent": {
+        "avg": 0.41065573770491837,
+        "max": 0.7
+      }
+    },
+    {
+      "variant": "node-redis",
+      "image": "next-node-redis",
+      "redis": true,
+      "scenario": "dynamic",
+      "startupMs": 528.3508330000041,
+      "idleMemoryMiB": 156,
+      "requestsPerSecond": 276.70476549956464,
+      "latencyMs": {
+        "med": 116.0286175,
+        "p95": 158.4130131,
+        "p99": 199.15501931,
+        "max": 225.879891
+      },
+      "failedRate": 0,
+      "checksFailed": 0,
+      "memoryMiB": {
+        "avg": 235.17457627118648,
+        "max": 248.7
+      },
+      "cpuPercent": {
+        "avg": 95.97220338983047,
+        "max": 101.77
+      },
+      "redisMemoryMiB": {
+        "avg": 6.197409836065576,
+        "max": 6.34
+      },
+      "redisCpuPercent": {
+        "avg": 0.3627868852459015,
+        "max": 0.4
+      }
+    },
+    {
+      "variant": "bun-redis",
+      "image": "next-compiler",
+      "redis": true,
+      "scenario": "cache",
+      "startupMs": 377.10941699999967,
+      "idleMemoryMiB": 141.2,
+      "requestsPerSecond": 505.9298367081094,
+      "latencyMs": {
+        "med": 61.067575,
+        "p95": 89.45733759999999,
+        "p99": 112.43848936,
+        "max": 205.340184
+      },
+      "failedRate": 0,
+      "checksFailed": 0,
+      "memoryMiB": {
+        "avg": 313.8819672131148,
+        "max": 339.9
+      },
+      "cpuPercent": {
+        "avg": 86.57377049180329,
+        "max": 98.19
+      },
+      "redisMemoryMiB": {
+        "avg": 39.29045762711866,
+        "max": 45.32
+      },
+      "redisCpuPercent": {
+        "avg": 0.6377966101694915,
+        "max": 0.83
+      }
+    },
+    {
+      "variant": "node-redis",
+      "image": "next-node-redis",
+      "redis": true,
+      "scenario": "cache",
+      "startupMs": 556.0374999999767,
+      "idleMemoryMiB": 152.3,
+      "requestsPerSecond": 254.84072374409763,
+      "latencyMs": {
+        "med": 122.9871375,
+        "p95": 169.6160596,
+        "p99": 184.67928099999997,
+        "max": 201.958825
+      },
+      "failedRate": 0,
+      "checksFailed": 0,
+      "memoryMiB": {
+        "avg": 234.16721311475422,
+        "max": 255.8
+      },
+      "cpuPercent": {
+        "avg": 95.66672131147547,
+        "max": 103.37
+      },
+      "redisMemoryMiB": {
+        "avg": 6.2787966101695,
+        "max": 6.336
+      },
+      "redisCpuPercent": {
+        "avg": 0.443389830508475,
+        "max": 0.69
+      }
+    },
+    {
+      "variant": "bun-redis",
+      "image": "next-compiler",
+      "redis": true,
+      "scenario": "api",
+      "startupMs": 386.08954200003063,
+      "idleMemoryMiB": 136.9,
+      "requestsPerSecond": 3593.1746472238483,
+      "latencyMs": {
+        "med": 8.422179,
+        "p95": 10.75469225,
+        "p99": 17.5754968,
+        "max": 63.554635
+      },
+      "failedRate": 0,
+      "checksFailed": 0,
+      "memoryMiB": {
+        "avg": 209.97868852459007,
+        "max": 247.5
+      },
+      "cpuPercent": {
+        "avg": 94.16852459016393,
+        "max": 99.63
+      },
+      "redisMemoryMiB": {
+        "avg": 40.838885245901615,
+        "max": 47.81
+      },
+      "redisCpuPercent": {
+        "avg": 0.2944262295081967,
+        "max": 0.59
+      }
+    },
+    {
+      "variant": "node-redis",
+      "image": "next-node-redis",
+      "redis": true,
+      "scenario": "api",
+      "startupMs": 528.6715419999673,
+      "idleMemoryMiB": 152.7,
+      "requestsPerSecond": 1963.4650503776757,
+      "latencyMs": {
+        "med": 12.716143,
+        "p95": 44.09437749999999,
+        "p99": 59.2214615,
+        "max": 220.009365
+      },
+      "failedRate": 0,
+      "checksFailed": 0,
+      "memoryMiB": {
+        "avg": 248.46721311475397,
+        "max": 266.3
+      },
+      "cpuPercent": {
+        "avg": 95.86819672131152,
+        "max": 103.49
+      },
+      "redisMemoryMiB": {
+        "avg": 6.235661016949155,
+        "max": 6.352
+      },
+      "redisCpuPercent": {
+        "avg": 0.2977966101694917,
+        "max": 0.33
+      }
+    },
+    {
+      "variant": "bun-redis",
+      "image": "next-compiler",
+      "redis": true,
+      "scenario": "asset",
+      "startupMs": 399.1637079999782,
+      "idleMemoryMiB": 140.9,
+      "requestsPerSecond": 19381.95261704444,
+      "latencyMs": {
+        "med": 1.354626,
+        "p95": 3.3072290999999976,
+        "p99": 4.940146519999997,
+        "max": 19.843154
+      },
+      "failedRate": 0,
+      "checksFailed": 0,
+      "memoryMiB": {
+        "avg": 185.43389830508468,
+        "max": 207.7
+      },
+      "cpuPercent": {
+        "avg": 84.99898305084746,
+        "max": 95.11
+      },
+      "redisMemoryMiB": {
+        "avg": 37.49178688524585,
+        "max": 45.24
+      },
+      "redisCpuPercent": {
+        "avg": 0.29344262295081996,
+        "max": 0.48
+      }
+    },
+    {
+      "variant": "node-redis",
+      "image": "next-node-redis",
+      "redis": true,
+      "scenario": "asset",
+      "startupMs": 551.1604159999988,
+      "idleMemoryMiB": 151.3,
+      "requestsPerSecond": 7761.972729242803,
+      "latencyMs": {
+        "med": 2.513837,
+        "p95": 6.470731249999998,
+        "p99": 43.167128760000004,
+        "max": 64.632122
+      },
+      "failedRate": 0,
+      "checksFailed": 0,
+      "memoryMiB": {
+        "avg": 181.1098360655737,
+        "max": 203.3
+      },
+      "cpuPercent": {
+        "avg": 96.29885245901642,
+        "max": 102.88
+      },
+      "redisMemoryMiB": {
+        "avg": 6.122762711864411,
+        "max": 6.242
+      },
+      "redisCpuPercent": {
+        "avg": 0.29288135593220366,
+        "max": 0.33
+      }
+    },
+    {
+      "variant": "bun-redis",
+      "image": "next-compiler",
+      "redis": true,
+      "scenario": "isr-new",
+      "startupMs": 379.38670899998397,
+      "idleMemoryMiB": 138.2,
+      "requestsPerSecond": 109.99670535654346,
+      "latencyMs": {
+        "med": 303.625922,
+        "p95": 458.95139909999995,
+        "p99": 572.8924605,
+        "max": 623.661572
+      },
+      "failedRate": 0,
+      "checksFailed": 0,
+      "memoryMiB": {
+        "avg": 361.8491803278687,
+        "max": 407.5
+      },
+      "cpuPercent": {
+        "avg": 72.97360655737704,
+        "max": 84.91
+      },
+      "redisMemoryMiB": {
+        "avg": 107.9620338983051,
+        "max": 138.1
+      },
+      "redisCpuPercent": {
+        "avg": 1.0706779661016943,
+        "max": 1.23
+      }
+    },
+    {
+      "variant": "node-redis",
+      "image": "next-node-redis",
+      "redis": true,
+      "scenario": "isr-new",
+      "startupMs": 540.2868329999619,
+      "idleMemoryMiB": 145.4,
+      "requestsPerSecond": 60.103486844133286,
+      "latencyMs": {
+        "med": 478.784245,
+        "p95": 1159.8011582499998,
+        "p99": 1245.46024913,
+        "max": 1245.999023
+      },
+      "failedRate": 0,
+      "checksFailed": 0,
+      "memoryMiB": {
+        "avg": 254.85000000000005,
+        "max": 283.5
+      },
+      "cpuPercent": {
+        "avg": 93.37666666666665,
+        "max": 102.26
+      },
+      "redisMemoryMiB": {
+        "avg": 44.71225806451616,
+        "max": 69.05
+      },
+      "redisCpuPercent": {
+        "avg": 0.8238709677419355,
+        "max": 0.97
+      }
+    },
+    {
+      "variant": "bun-redis",
+      "image": "next-compiler",
+      "redis": true,
+      "scenario": "image",
+      "startupMs": 414.12416700005997,
+      "idleMemoryMiB": 142.3,
+      "requestsPerSecond": 13746.016080601328,
+      "latencyMs": {
+        "med": 2.140793,
+        "p95": 4.037879,
+        "p99": 5.546959039999999,
+        "max": 31.397613
+      },
+      "failedRate": 0,
+      "checksFailed": 0,
+      "memoryMiB": {
+        "avg": 212.95737704918028,
+        "max": 268.3
+      },
+      "cpuPercent": {
+        "avg": 77.02786885245904,
+        "max": 84.53
+      },
+      "redisMemoryMiB": {
+        "avg": 32.78122033898304,
+        "max": 47.7
+      },
+      "redisCpuPercent": {
+        "avg": 4.121186440677965,
+        "max": 4.74
+      }
+    },
+    {
+      "variant": "node-redis",
+      "image": "next-node-redis",
+      "redis": true,
+      "scenario": "image",
+      "startupMs": 562.8340420000022,
+      "idleMemoryMiB": 154.1,
+      "requestsPerSecond": 8010.355018125809,
+      "latencyMs": {
+        "med": 3.767712,
+        "p95": 6.054609499999999,
+        "p99": 11.648873299999991,
+        "max": 46.883877
+      },
+      "failedRate": 0,
+      "checksFailed": 0,
+      "memoryMiB": {
+        "avg": 185.85409836065566,
+        "max": 221
+      },
+      "cpuPercent": {
+        "avg": 86.49213114754099,
+        "max": 95.36
+      },
+      "redisMemoryMiB": {
+        "avg": 6.294852459016395,
+        "max": 6.41
+      },
+      "redisCpuPercent": {
+        "avg": 2.5763934426229502,
+        "max": 2.92
+      }
+    }
+  ]
+}
