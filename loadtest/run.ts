@@ -1,12 +1,15 @@
-// Load test: runs every k6 scenario against each image, one container at a
-// time, with the same resource limits, and writes a report.
+// Load test: runs every k6 scenario against each variant, one at a time, with
+// the same resource limits, and writes a report.
 //
-//   bun loadtest/run.ts                          # both images, every scenario
-//   bun loadtest/run.ts --images next-node --scenarios static,api
+//   bun loadtest/run.ts                          # every variant and scenario
+//   bun loadtest/run.ts --variants node=next-node --scenarios static,api
 //
-// Each scenario gets a fresh container, so no scenario inherits the caches or
-// the memory of the previous one. k6 runs in a container on the same Docker
-// network as the server, so Docker Desktop's port forwarding is not measured.
+// A variant is `name=image`, or `name=image+redis` to give the server a Redis
+// cache (`REDIS_URI`). Each scenario gets a fresh server, and a fresh, empty
+// Redis when the variant uses one, so no scenario inherits the caches or the
+// memory of the previous one. Redis counts as part of the system: its memory
+// and CPU are measured too. k6 runs in a container on the same Docker network
+// as the server, so Docker Desktop's port forwarding is not measured.
 
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -14,7 +17,10 @@ import { parseArgs } from "node:util";
 
 const { values } = parseArgs({
   options: {
-    images: { type: "string", default: "next-compiler,next-node" },
+    variants: {
+      type: "string",
+      default: "bun=next-compiler,bun-redis=next-compiler+redis,node=next-node",
+    },
     scenarios: {
       type: "string",
       default: "static,dynamic,cache,api,asset,isr-new,image",
@@ -28,16 +34,22 @@ const { values } = parseArgs({
 });
 
 const K6_IMAGE = "grafana/k6:2.3.0";
+const REDIS_IMAGE = "redis:8.2-alpine";
 const NETWORK = "next-bench";
 const CONTAINER = "next-bench-app";
+const REDIS_CONTAINER = "next-bench-redis";
 const HOST_PORT = 18080;
 const loadtestDir = import.meta.dir;
 const tmpDir = join(loadtestDir, "results", "tmp");
 
 type Usage = { memoryMiB: number; cpuPercent: number };
 
+type Variant = { name: string; image: string; redis: boolean };
+
 type ScenarioResult = {
+  variant: string;
   image: string;
+  redis: boolean;
   scenario: string;
   startupMs: number;
   idleMemoryMiB: number;
@@ -47,6 +59,8 @@ type ScenarioResult = {
   checksFailed: number;
   memoryMiB: { avg: number; max: number };
   cpuPercent: { avg: number; max: number };
+  redisMemoryMiB?: { avg: number; max: number };
+  redisCpuPercent?: { avg: number; max: number };
 };
 
 async function sh(args: string[], options: { quiet?: boolean } = {}) {
@@ -62,13 +76,34 @@ async function sh(args: string[], options: { quiet?: boolean } = {}) {
   return stdout;
 }
 
-async function startServer(image: string): Promise<number> {
+// An empty Redis used only as a cache: no persistence, evicts the least
+// recently used keys when full, as the adapter expects.
+async function startRedis() {
+  await sh(["docker", "rm", "-f", REDIS_CONTAINER], { quiet: true });
+  await sh([
+    "docker", "run", "-d", "--name", REDIS_CONTAINER, "--network", NETWORK,
+    "--cpus", "1", "--memory", "512m", REDIS_IMAGE,
+    "redis-server", "--save", "", "--appendonly", "no",
+    "--maxmemory", "384mb", "--maxmemory-policy", "allkeys-lru",
+  ]);
+  for (let i = 0; i < 100; i++) {
+    const pong = await sh(["docker", "exec", REDIS_CONTAINER, "redis-cli", "ping"], {
+      quiet: true,
+    });
+    if (pong.trim() === "PONG") return;
+    await Bun.sleep(50);
+  }
+  throw new Error("Redis did not start");
+}
+
+async function startServer(variant: Variant): Promise<number> {
   await sh(["docker", "rm", "-f", CONTAINER], { quiet: true });
+  const env = variant.redis ? ["-e", `REDIS_URI=redis://${REDIS_CONTAINER}:6379`] : [];
   const started = performance.now();
   await sh([
     "docker", "run", "-d", "--name", CONTAINER, "--network", NETWORK,
     "--cpus", values.cpus!, "--memory", values.memory!,
-    "-p", `${HOST_PORT}:8080`, image,
+    "-p", `${HOST_PORT}:8080`, ...env, variant.image,
   ]);
   // Ready when the server answers its first request.
   for (;;) {
@@ -77,16 +112,16 @@ async function startServer(image: string): Promise<number> {
       if (response.ok) return performance.now() - started;
     } catch {}
     if (performance.now() - started > 60_000) {
-      throw new Error(`${image} did not start in 60s`);
+      throw new Error(`${variant.name} did not start in 60s`);
     }
     await Bun.sleep(25);
   }
 }
 
-async function usage(): Promise<Usage> {
+async function usage(container: string): Promise<Usage> {
   const line = await sh([
     "docker", "stats", "--no-stream", "--format",
-    "{{.MemUsage}}|{{.CPUPerc}}", CONTAINER,
+    "{{.MemUsage}}|{{.CPUPerc}}", container,
   ]);
   return parseUsage(line);
 }
@@ -101,10 +136,10 @@ function parseUsage(line: string): Usage {
 }
 
 // Samples `docker stats` while k6 runs.
-function sampleUsage() {
+function sampleUsage(container: string) {
   const samples: Usage[] = [];
   const proc = Bun.spawn(
-    ["docker", "stats", "--format", "{{.MemUsage}}|{{.CPUPerc}}", CONTAINER],
+    ["docker", "stats", "--format", "{{.MemUsage}}|{{.CPUPerc}}", container],
     { stdout: "pipe", stderr: "ignore" },
   );
   (async () => {
@@ -148,23 +183,28 @@ function stats(numbers: number[]) {
   return { avg: sum / numbers.length, max: Math.max(...numbers) };
 }
 
-async function runScenario(image: string, scenario: string) {
-  const startupMs = await startServer(image);
+async function runScenario(variant: Variant, scenario: string) {
+  if (variant.redis) await startRedis();
+  const startupMs = await startServer(variant);
   await Bun.sleep(2000);
-  const idle = await usage();
+  const idle = await usage(CONTAINER);
 
   await k6(scenario, values.warmup!);
 
-  const summaryFile = `${image}-${scenario}.json`;
-  const sampler = sampleUsage();
+  const summaryFile = `${variant.name}-${scenario}.json`;
+  const sampler = sampleUsage(CONTAINER);
+  const redisSampler = variant.redis ? sampleUsage(REDIS_CONTAINER) : undefined;
   await k6(scenario, values.duration!, summaryFile);
   const samples = sampler.stop();
+  const redisSamples = redisSampler?.stop();
 
   const summary = JSON.parse(readFileSync(join(tmpDir, summaryFile), "utf8"));
   const m = summary.metrics;
   const duration = m.http_req_duration.values;
   const result: ScenarioResult = {
-    image,
+    variant: variant.name,
+    image: variant.image,
+    redis: variant.redis,
     scenario,
     startupMs,
     idleMemoryMiB: idle.memoryMiB,
@@ -180,7 +220,11 @@ async function runScenario(image: string, scenario: string) {
     memoryMiB: stats(samples.map((s) => s.memoryMiB)),
     cpuPercent: stats(samples.map((s) => s.cpuPercent)),
   };
-  await sh(["docker", "rm", "-f", CONTAINER], { quiet: true });
+  if (redisSamples) {
+    result.redisMemoryMiB = stats(redisSamples.map((s) => s.memoryMiB));
+    result.redisCpuPercent = stats(redisSamples.map((s) => s.cpuPercent));
+  }
+  await sh(["docker", "rm", "-f", CONTAINER, REDIS_CONTAINER], { quiet: true });
   return result;
 }
 
@@ -190,21 +234,25 @@ function report(results: ScenarioResult[]): string {
     `Límites por contenedor: ${values.cpus} CPU, ${values.memory} de memoria. ` +
       `k6: ${values.vus} VUs, ${values.duration} (+${values.warmup} de calentamiento).`,
     "",
-    "| Escenario | Imagen | req/s | p50 (ms) | p95 (ms) | p99 (ms) | Errores | RAM prom / máx (MiB) | CPU prom (%) |",
-    "|---|---|---|---|---|---|---|---|---|",
+    "Redis (cuando aplica): 1 CPU, 512 MiB, sin persistencia, `allkeys-lru`.",
+    "",
+    "| Escenario | Variante | req/s | p50 (ms) | p95 (ms) | p99 (ms) | Errores | RAM app prom / máx (MiB) | CPU app prom (%) | RAM Redis máx (MiB) | CPU Redis prom (%) |",
+    "|---|---|---|---|---|---|---|---|---|---|---|",
   ];
   for (const r of results) {
     lines.push(
-      `| ${r.scenario} | ${r.image} | ${f(r.requestsPerSecond)} | ${f(r.latencyMs.med)} | ` +
+      `| ${r.scenario} | ${r.variant} | ${f(r.requestsPerSecond)} | ${f(r.latencyMs.med)} | ` +
         `${f(r.latencyMs.p95)} | ${f(r.latencyMs.p99)} | ${f(r.failedRate * 100, 2)} % | ` +
-        `${f(r.memoryMiB.avg, 0)} / ${f(r.memoryMiB.max, 0)} | ${f(r.cpuPercent.avg, 0)} |`,
+        `${f(r.memoryMiB.avg, 0)} / ${f(r.memoryMiB.max, 0)} | ${f(r.cpuPercent.avg, 0)} | ` +
+        `${r.redisMemoryMiB ? f(r.redisMemoryMiB.max, 0) : "—"} | ` +
+        `${r.redisCpuPercent ? f(r.redisCpuPercent.avg, 0) : "—"} |`,
     );
   }
-  lines.push("", "| Imagen | Arranque prom (ms) | RAM en reposo prom (MiB) |", "|---|---|---|");
-  for (const image of new Set(results.map((r) => r.image))) {
-    const own = results.filter((r) => r.image === image);
+  lines.push("", "| Variante | Arranque prom (ms) | RAM en reposo prom (MiB) |", "|---|---|---|");
+  for (const variant of new Set(results.map((r) => r.variant))) {
+    const own = results.filter((r) => r.variant === variant);
     lines.push(
-      `| ${image} | ${f(stats(own.map((r) => r.startupMs)).avg, 0)} | ` +
+      `| ${variant} | ${f(stats(own.map((r) => r.startupMs)).avg, 0)} | ` +
         `${f(stats(own.map((r) => r.idleMemoryMiB)).avg, 0)} |`,
     );
   }
@@ -216,13 +264,17 @@ await sh(["docker", "network", "create", NETWORK], { quiet: true });
 
 const results: ScenarioResult[] = [];
 const scenarios = values.scenarios!.split(",");
-const images = values.images!.split(",");
-// Interleave the images per scenario, so a drift in the host (thermal
-// throttling, background work) affects both alike.
+const variants: Variant[] = values.variants!.split(",").map((spec) => {
+  const [name, target] = spec.split("=");
+  const [image, extra] = target.split("+");
+  return { name, image, redis: extra === "redis" };
+});
+// Interleave the variants per scenario, so a drift in the host (thermal
+// throttling, background work) affects all of them alike.
 for (const scenario of scenarios) {
-  for (const image of images) {
-    process.stdout.write(`${scenario} · ${image} … `);
-    const result = await runScenario(image, scenario);
+  for (const variant of variants) {
+    process.stdout.write(`${scenario} · ${variant.name} … `);
+    const result = await runScenario(variant, scenario);
     console.log(
       `${result.requestsPerSecond.toFixed(1)} req/s, p95 ${result.latencyMs.p95.toFixed(1)} ms, ` +
         `RAM máx ${result.memoryMiB.max.toFixed(0)} MiB`,
