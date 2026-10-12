@@ -1,0 +1,853 @@
+{
+  "config": {
+    "repeat": "2",
+    "variants": "next-bun,next-node",
+    "scenarios": "static,dynamic,cache,api,asset,isr-new,image",
+    "replicas": "8",
+    "vus": "64",
+    "duration": "30s",
+    "warmup": "10s"
+  },
+  "results": [
+    {
+      "variant": "next-bun",
+      "scenario": "static",
+      "repetition": 1,
+      "replicas": 8,
+      "requestsPerSecond": 9230.182233297757,
+      "latencyMs": {
+        "med": 4.250962,
+        "p95": 23.916393049999996,
+        "p99": 48.28322423,
+        "max": 100.720519
+      },
+      "failedRate": 0,
+      "memoryTotalMiB": {
+        "max": 1038.0390625
+      },
+      "memoryPodMiB": {
+        "max": 166.21875
+      },
+      "cpuTotalPercent": {
+        "avg": 361.1332693259526
+      },
+      "cpuPodPercent": {
+        "min": 43.91035212047431,
+        "max": 45.340273204534284
+      },
+      "idlePodMiB": 47.478515625,
+      "redisDataPeakMiB": 1.6689300537109375,
+      "redisKeys": 0
+    },
+    {
+      "variant": "next-node",
+      "scenario": "static",
+      "repetition": 1,
+      "replicas": 8,
+      "requestsPerSecond": 3641.597859889669,
+      "latencyMs": {
+        "med": 9.963408000000001,
+        "p95": 57.767759049999995,
+        "p99": 88.55974834999999,
+        "max": 171.324216
+      },
+      "failedRate": 0,
+      "memoryTotalMiB": {
+        "max": 661.46875
+      },
+      "memoryPodMiB": {
+        "max": 93.64453125
+      },
+      "cpuTotalPercent": {
+        "avg": 360.3158891139244
+      },
+      "cpuPodPercent": {
+        "min": 43.70385776155412,
+        "max": 45.1129419661552
+      },
+      "idlePodMiB": 46.40625,
+      "redisDataPeakMiB": 1.6689300537109375,
+      "redisKeys": 0
+    },
+    {
+      "variant": "next-bun",
+      "scenario": "dynamic",
+      "repetition": 1,
+      "replicas": 8,
+      "requestsPerSecond": 1532.0234007719873,
+      "latencyMs": {
+        "med": 29.011155,
+        "p95": 87.72227359999998,
+        "p99": 102.65255199999999,
+        "max": 259.243434
+      },
+      "failedRate": 0,
+      "memoryTotalMiB": {
+        "max": 1439.96875
+      },
+      "memoryPodMiB": {
+        "max": 196.2265625
+      },
+      "cpuTotalPercent": {
+        "avg": 360.62505766552084
+      },
+      "cpuPodPercent": {
+        "min": 43.821555316049974,
+        "max": 45.26030239938498
+      },
+      "idlePodMiB": 49.541015625,
+      "redisDataPeakMiB": 1.6689300537109375,
+      "redisKeys": 0
+    },
+    {
+      "variant": "next-node",
+      "scenario": "dynamic",
+      "repetition": 1,
+      "replicas": 8,
+      "requestsPerSecond": 676.0017087248596,
+      "latencyMs": {
+        "med": 92.0138055,
+        "p95": 197.1045633,
+        "p99": 208.93227226999997,
+        "max": 290.685924
+      },
+      "failedRate": 0,
+      "memoryTotalMiB": {
+        "max": 840.46484375
+      },
+      "memoryPodMiB": {
+        "max": 113.640625
+      },
+      "cpuTotalPercent": {
+        "avg": 357.82573951434813
+      },
+      "cpuPodPercent": {
+        "min": 43.25508388000222,
+        "max": 44.87357605071649
+      },
+      "idlePodMiB": 44.818359375,
+      "redisDataPeakMiB": 1.6689300537109375,
+      "redisKeys": 0
+    },
+    {
+      "variant": "next-bun",
+      "scenario": "cache",
+      "repetition": 1,
+      "replicas": 8,
+      "requestsPerSecond": 1413.428482586834,
+      "latencyMs": {
+        "med": 39.451875,
+        "p95": 94.3827907,
+        "p99": 129.237426,
+        "max": 207.880593
+      },
+      "failedRate": 0,
+      "memoryTotalMiB": {
+        "max": 1482.12109375
+      },
+      "memoryPodMiB": {
+        "max": 210.875
+      },
+      "cpuTotalPercent": {
+        "avg": 360.89297019207294
+      },
+      "cpuPodPercent": {
+        "min": 43.72950225442901,
+        "max": 45.25768199784773
+      },
+      "idlePodMiB": 47.888671875,
+      "redisDataPeakMiB": 1.6689300537109375,
+      "redisKeys": 1
+    },
+    {
+      "variant": "next-node",
+      "scenario": "cache",
+      "repetition": 1,
+      "replicas": 8,
+      "requestsPerSecond": 596.3215485228759,
+      "latencyMs": {
+        "med": 97.302179,
+        "p95": 200.16295449999998,
+        "p99": 211.16169299999999,
+        "max": 289.768988
+      },
+      "failedRate": 0,
+      "memoryTotalMiB": {
+        "max": 847.2109375
+      },
+      "memoryPodMiB": {
+        "max": 112.67578125
+      },
+      "cpuTotalPercent": {
+        "avg": 358.173277715935
+      },
+      "cpuPodPercent": {
+        "min": 43.37898950591841,
+        "max": 44.92441069775832
+      },
+      "idlePodMiB": 46.099609375,
+      "redisDataPeakMiB": 1.6689300537109375,
+      "redisKeys": 1
+    },
+    {
+      "variant": "next-bun",
+      "scenario": "api",
+      "repetition": 1,
+      "replicas": 8,
+      "requestsPerSecond": 9243.880737898638,
+      "latencyMs": {
+        "med": 3.714921,
+        "p95": 30.640523399999996,
+        "p99": 49.149801,
+        "max": 99.421895
+      },
+      "failedRate": 0,
+      "memoryTotalMiB": {
+        "max": 869.6484375
+      },
+      "memoryPodMiB": {
+        "max": 114.421875
+      },
+      "cpuTotalPercent": {
+        "avg": 373.475079520931
+      },
+      "cpuPodPercent": {
+        "min": 45.24743159756114,
+        "max": 46.73162994581279
+      },
+      "idlePodMiB": 47.875,
+      "redisDataPeakMiB": 1.6689300537109375,
+      "redisKeys": 0
+    },
+    {
+      "variant": "next-node",
+      "scenario": "api",
+      "repetition": 1,
+      "replicas": 8,
+      "requestsPerSecond": 3884.4296410025786,
+      "latencyMs": {
+        "med": 7.891358,
+        "p95": 59.701553999999994,
+        "p99": 88.81433312,
+        "max": 199.288708
+      },
+      "failedRate": 0,
+      "memoryTotalMiB": {
+        "max": 1005.453125
+      },
+      "memoryPodMiB": {
+        "max": 134.89453125
+      },
+      "cpuTotalPercent": {
+        "avg": 360.44486673349434
+      },
+      "cpuPodPercent": {
+        "min": 43.85524323566341,
+        "max": 45.10919405070648
+      },
+      "idlePodMiB": 48.10546875,
+      "redisDataPeakMiB": 1.6689300537109375,
+      "redisKeys": 0
+    },
+    {
+      "variant": "next-bun",
+      "scenario": "asset",
+      "repetition": 1,
+      "replicas": 8,
+      "requestsPerSecond": 23399.06952981377,
+      "latencyMs": {
+        "med": 2.149585,
+        "p95": 7.057857399999999,
+        "p99": 11.16979304,
+        "max": 47.339632
+      },
+      "failedRate": 0,
+      "memoryTotalMiB": {
+        "max": 731.625
+      },
+      "memoryPodMiB": {
+        "max": 106.80859375
+      },
+      "cpuTotalPercent": {
+        "avg": 202.40470374038853
+      },
+      "cpuPodPercent": {
+        "min": 17.465239125013312,
+        "max": 39.034602106514626
+      },
+      "idlePodMiB": 46.751953125,
+      "redisDataPeakMiB": 1.6689300537109375,
+      "redisKeys": 0
+    },
+    {
+      "variant": "next-node",
+      "scenario": "asset",
+      "repetition": 1,
+      "replicas": 8,
+      "requestsPerSecond": 21411.772432975205,
+      "latencyMs": {
+        "med": 1.178919,
+        "p95": 7.044149349999995,
+        "p99": 48.19111376,
+        "max": 91.406209
+      },
+      "failedRate": 0,
+      "memoryTotalMiB": {
+        "max": 637.60546875
+      },
+      "memoryPodMiB": {
+        "max": 83.76953125
+      },
+      "cpuTotalPercent": {
+        "avg": 363.72696953345263
+      },
+      "cpuPodPercent": {
+        "min": 44.16439877489177,
+        "max": 45.50511726180423
+      },
+      "idlePodMiB": 50.17578125,
+      "redisDataPeakMiB": 1.6689300537109375,
+      "redisKeys": 0
+    },
+    {
+      "variant": "next-bun",
+      "scenario": "isr-new",
+      "repetition": 1,
+      "replicas": 8,
+      "requestsPerSecond": 321.31410339611665,
+      "latencyMs": {
+        "med": 181.76513599999998,
+        "p95": 357.65922285,
+        "p99": 470.83125623,
+        "max": 683.630418
+      },
+      "failedRate": 0,
+      "memoryTotalMiB": {
+        "max": 1727.796875
+      },
+      "memoryPodMiB": {
+        "max": 262.3671875
+      },
+      "cpuTotalPercent": {
+        "avg": 338.77316686778306
+      },
+      "cpuPodPercent": {
+        "min": 29.21915863531168,
+        "max": 45.26506950131002
+      },
+      "idlePodMiB": 48.166015625,
+      "redisDataPeakMiB": 334.8720245361328,
+      "redisKeys": 23828
+    },
+    {
+      "variant": "next-node",
+      "scenario": "isr-new",
+      "repetition": 1,
+      "replicas": 8,
+      "requestsPerSecond": 202.96077804636727,
+      "latencyMs": {
+        "med": 296.687731,
+        "p95": 496.95695259999997,
+        "p99": 609.0634967199999,
+        "max": 1071.070711
+      },
+      "failedRate": 0,
+      "memoryTotalMiB": {
+        "max": 883.88671875
+      },
+      "memoryPodMiB": {
+        "max": 116.55078125
+      },
+      "cpuTotalPercent": {
+        "avg": 357.83090073188214
+      },
+      "cpuPodPercent": {
+        "min": 44.022578007744244,
+        "max": 45.17647822004724
+      },
+      "idlePodMiB": 45.978515625,
+      "redisDataPeakMiB": 334.8720245361328,
+      "redisKeys": 15654
+    },
+    {
+      "variant": "next-bun",
+      "scenario": "image",
+      "repetition": 1,
+      "replicas": 8,
+      "requestsPerSecond": 34678.02205559988,
+      "latencyMs": {
+        "med": 1.294043,
+        "p95": 4.812969649999996,
+        "p99": 10.473812819999994,
+        "max": 103.042555
+      },
+      "failedRate": 0,
+      "memoryTotalMiB": {
+        "max": 933.3671875
+      },
+      "memoryPodMiB": {
+        "max": 128.37890625
+      },
+      "cpuTotalPercent": {
+        "avg": 331.6121945359342
+      },
+      "cpuPodPercent": {
+        "min": 34.39909816246561,
+        "max": 43.76717190076503
+      },
+      "idlePodMiB": 50.931640625,
+      "redisDataPeakMiB": 334.8720245361328,
+      "redisKeys": 5
+    },
+    {
+      "variant": "next-node",
+      "scenario": "image",
+      "repetition": 1,
+      "replicas": 8,
+      "requestsPerSecond": 19828.913142833484,
+      "latencyMs": {
+        "med": 1.92612,
+        "p95": 8.236407399999997,
+        "p99": 29.211292019999977,
+        "max": 91.338087
+      },
+      "failedRate": 0,
+      "memoryTotalMiB": {
+        "max": 660.74609375
+      },
+      "memoryPodMiB": {
+        "max": 87.18359375
+      },
+      "cpuTotalPercent": {
+        "avg": 352.8431048341328
+      },
+      "cpuPodPercent": {
+        "min": 41.213894052377924,
+        "max": 45.15827445673909
+      },
+      "idlePodMiB": 46.611328125,
+      "redisDataPeakMiB": 334.8720245361328,
+      "redisKeys": 5
+    },
+    {
+      "variant": "next-bun",
+      "scenario": "static",
+      "repetition": 2,
+      "replicas": 8,
+      "requestsPerSecond": 9939.866109828876,
+      "latencyMs": {
+        "med": 3.9361759999999997,
+        "p95": 23.05147425,
+        "p99": 42.89536894999999,
+        "max": 88.27724
+      },
+      "failedRate": 0,
+      "memoryTotalMiB": {
+        "max": 992.3515625
+      },
+      "memoryPodMiB": {
+        "max": 158.25390625
+      },
+      "cpuTotalPercent": {
+        "avg": 361.2881013503858
+      },
+      "cpuPodPercent": {
+        "min": 43.28184730942123,
+        "max": 45.616002994866065
+      },
+      "idlePodMiB": 48.46484375,
+      "redisDataPeakMiB": 334.8720245361328,
+      "redisKeys": 0
+    },
+    {
+      "variant": "next-node",
+      "scenario": "static",
+      "repetition": 2,
+      "replicas": 8,
+      "requestsPerSecond": 3817.9207260187486,
+      "latencyMs": {
+        "med": 9.269431,
+        "p95": 58.048616399999986,
+        "p99": 88.00771793999998,
+        "max": 191.587101
+      },
+      "failedRate": 0,
+      "memoryTotalMiB": {
+        "max": 658.68359375
+      },
+      "memoryPodMiB": {
+        "max": 87.203125
+      },
+      "cpuTotalPercent": {
+        "avg": 360.1801829547083
+      },
+      "cpuPodPercent": {
+        "min": 43.7540286824315,
+        "max": 45.05801442382759
+      },
+      "idlePodMiB": 49.732421875,
+      "redisDataPeakMiB": 334.8720245361328,
+      "redisKeys": 0
+    },
+    {
+      "variant": "next-bun",
+      "scenario": "dynamic",
+      "repetition": 2,
+      "replicas": 8,
+      "requestsPerSecond": 1629.2766496918337,
+      "latencyMs": {
+        "med": 27.971105,
+        "p95": 87.42186834999998,
+        "p99": 102.49830314,
+        "max": 236.423953
+      },
+      "failedRate": 0,
+      "memoryTotalMiB": {
+        "max": 1456.87890625
+      },
+      "memoryPodMiB": {
+        "max": 216.453125
+      },
+      "cpuTotalPercent": {
+        "avg": 360.89047189729445
+      },
+      "cpuPodPercent": {
+        "min": 43.81924203822188,
+        "max": 45.27852460824572
+      },
+      "idlePodMiB": 50.177734375,
+      "redisDataPeakMiB": 334.8720245361328,
+      "redisKeys": 0
+    },
+    {
+      "variant": "next-node",
+      "scenario": "dynamic",
+      "repetition": 2,
+      "replicas": 8,
+      "requestsPerSecond": 653.6971917300513,
+      "latencyMs": {
+        "med": 91.51822250000001,
+        "p95": 197.12661955,
+        "p99": 230.02786475,
+        "max": 410.629761
+      },
+      "failedRate": 0,
+      "memoryTotalMiB": {
+        "max": 872.34375
+      },
+      "memoryPodMiB": {
+        "max": 123.5078125
+      },
+      "cpuTotalPercent": {
+        "avg": 357.63227755075985
+      },
+      "cpuPodPercent": {
+        "min": 43.302616209627736,
+        "max": 44.884202785724895
+      },
+      "idlePodMiB": 48.919921875,
+      "redisDataPeakMiB": 334.8720245361328,
+      "redisKeys": 0
+    },
+    {
+      "variant": "next-bun",
+      "scenario": "cache",
+      "repetition": 2,
+      "replicas": 8,
+      "requestsPerSecond": 1381.6691531868712,
+      "latencyMs": {
+        "med": 41.29193,
+        "p95": 94.01860909999999,
+        "p99": 136.74944634,
+        "max": 287.161467
+      },
+      "failedRate": 0,
+      "memoryTotalMiB": {
+        "max": 1487.74609375
+      },
+      "memoryPodMiB": {
+        "max": 206.4921875
+      },
+      "cpuTotalPercent": {
+        "avg": 361.32971058511083
+      },
+      "cpuPodPercent": {
+        "min": 43.92012268026652,
+        "max": 45.514539182303864
+      },
+      "idlePodMiB": 48.8125,
+      "redisDataPeakMiB": 334.8720245361328,
+      "redisKeys": 1
+    },
+    {
+      "variant": "next-node",
+      "scenario": "cache",
+      "repetition": 2,
+      "replicas": 8,
+      "requestsPerSecond": 569.4582852515497,
+      "latencyMs": {
+        "med": 97.41924,
+        "p95": 215.95798904999998,
+        "p99": 278.4492775,
+        "max": 306.946974
+      },
+      "failedRate": 0,
+      "memoryTotalMiB": {
+        "max": 851.671875
+      },
+      "memoryPodMiB": {
+        "max": 117.3671875
+      },
+      "cpuTotalPercent": {
+        "avg": 359.0127019157536
+      },
+      "cpuPodPercent": {
+        "min": 43.50941054372417,
+        "max": 45.145845515384266
+      },
+      "idlePodMiB": 45.283203125,
+      "redisDataPeakMiB": 334.8720245361328,
+      "redisKeys": 1
+    },
+    {
+      "variant": "next-bun",
+      "scenario": "api",
+      "repetition": 2,
+      "replicas": 8,
+      "requestsPerSecond": 9147.933557042728,
+      "latencyMs": {
+        "med": 3.721918,
+        "p95": 28.852282499999948,
+        "p99": 47.36000749999999,
+        "max": 121.965256
+      },
+      "failedRate": 0,
+      "memoryTotalMiB": {
+        "max": 864.64453125
+      },
+      "memoryPodMiB": {
+        "max": 119.31640625
+      },
+      "cpuTotalPercent": {
+        "avg": 359.6002059969739
+      },
+      "cpuPodPercent": {
+        "min": 44.03683125878625,
+        "max": 44.947017235760924
+      },
+      "idlePodMiB": 47.064453125,
+      "redisDataPeakMiB": 334.8720245361328,
+      "redisKeys": 0
+    },
+    {
+      "variant": "next-node",
+      "scenario": "api",
+      "repetition": 2,
+      "replicas": 8,
+      "requestsPerSecond": 3936.244783416874,
+      "latencyMs": {
+        "med": 7.6945865,
+        "p95": 57.648555999999985,
+        "p99": 88.47859183,
+        "max": 186.579407
+      },
+      "failedRate": 0,
+      "memoryTotalMiB": {
+        "max": 1024.9453125
+      },
+      "memoryPodMiB": {
+        "max": 138.7734375
+      },
+      "cpuTotalPercent": {
+        "avg": 371.4324420741559
+      },
+      "cpuPodPercent": {
+        "min": 45.039715174618884,
+        "max": 46.476289572591234
+      },
+      "idlePodMiB": 44.216796875,
+      "redisDataPeakMiB": 334.8720245361328,
+      "redisKeys": 0
+    },
+    {
+      "variant": "next-bun",
+      "scenario": "asset",
+      "repetition": 2,
+      "replicas": 8,
+      "requestsPerSecond": 22648.20223438128,
+      "latencyMs": {
+        "med": 2.192168,
+        "p95": 7.273506199999997,
+        "p99": 11.411676839999997,
+        "max": 293.985157
+      },
+      "failedRate": 0,
+      "memoryTotalMiB": {
+        "max": 718.421875
+      },
+      "memoryPodMiB": {
+        "max": 97.5703125
+      },
+      "cpuTotalPercent": {
+        "avg": 199.76175909028498
+      },
+      "cpuPodPercent": {
+        "min": 20.870383389376194,
+        "max": 30.055035701869226
+      },
+      "idlePodMiB": 47.130859375,
+      "redisDataPeakMiB": 334.8720245361328,
+      "redisKeys": 0
+    },
+    {
+      "variant": "next-node",
+      "scenario": "asset",
+      "repetition": 2,
+      "replicas": 8,
+      "requestsPerSecond": 20596.576375200293,
+      "latencyMs": {
+        "med": 1.229667,
+        "p95": 8.18558649999999,
+        "p99": 48.81629024999998,
+        "max": 90.271495
+      },
+      "failedRate": 0,
+      "memoryTotalMiB": {
+        "max": 642.58203125
+      },
+      "memoryPodMiB": {
+        "max": 83.4296875
+      },
+      "cpuTotalPercent": {
+        "avg": 351.2549650950576
+      },
+      "cpuPodPercent": {
+        "min": 43.132064290072094,
+        "max": 43.97425472067911
+      },
+      "idlePodMiB": 48.869140625,
+      "redisDataPeakMiB": 334.8720245361328,
+      "redisKeys": 0
+    },
+    {
+      "variant": "next-bun",
+      "scenario": "isr-new",
+      "repetition": 2,
+      "replicas": 8,
+      "requestsPerSecond": 356.0524000484854,
+      "latencyMs": {
+        "med": 167.639192,
+        "p95": 294.9260686,
+        "p99": 396.05661907999996,
+        "max": 660.433266
+      },
+      "failedRate": 0,
+      "memoryTotalMiB": {
+        "max": 1670.08203125
+      },
+      "memoryPodMiB": {
+        "max": 261.078125
+      },
+      "cpuTotalPercent": {
+        "avg": 330.5707152635344
+      },
+      "cpuPodPercent": {
+        "min": 32.22243493487266,
+        "max": 44.27467475030389
+      },
+      "idlePodMiB": 49.919921875,
+      "redisDataPeakMiB": 367.78438568115234,
+      "redisKeys": 26180
+    },
+    {
+      "variant": "next-node",
+      "scenario": "isr-new",
+      "repetition": 2,
+      "replicas": 8,
+      "requestsPerSecond": 210.94572204029717,
+      "latencyMs": {
+        "med": 300.963746,
+        "p95": 406.211689,
+        "p99": 479.44717972,
+        "max": 587.301903
+      },
+      "failedRate": 0,
+      "memoryTotalMiB": {
+        "max": 870.39453125
+      },
+      "memoryPodMiB": {
+        "max": 116.93359375
+      },
+      "cpuTotalPercent": {
+        "avg": 358.0114254906946
+      },
+      "cpuPodPercent": {
+        "min": 43.474548242495516,
+        "max": 44.9807978252008
+      },
+      "idlePodMiB": 45.447265625,
+      "redisDataPeakMiB": 367.78438568115234,
+      "redisKeys": 16272
+    },
+    {
+      "variant": "next-bun",
+      "scenario": "image",
+      "repetition": 2,
+      "replicas": 8,
+      "requestsPerSecond": 33835.730457389545,
+      "latencyMs": {
+        "med": 1.275584,
+        "p95": 4.950377,
+        "p99": 11.390167669999997,
+        "max": 69.04907
+      },
+      "failedRate": 0,
+      "memoryTotalMiB": {
+        "max": 916.42578125
+      },
+      "memoryPodMiB": {
+        "max": 130.54296875
+      },
+      "cpuTotalPercent": {
+        "avg": 324.52332543873814
+      },
+      "cpuPodPercent": {
+        "min": 31.51502574066569,
+        "max": 43.49356346080313
+      },
+      "idlePodMiB": 48.220703125,
+      "redisDataPeakMiB": 367.78438568115234,
+      "redisKeys": 5
+    },
+    {
+      "variant": "next-node",
+      "scenario": "image",
+      "repetition": 2,
+      "replicas": 8,
+      "requestsPerSecond": 19878.91034878048,
+      "latencyMs": {
+        "med": 1.803418,
+        "p95": 9.268263999999995,
+        "p99": 32.0450422,
+        "max": 92.285787
+      },
+      "failedRate": 0,
+      "memoryTotalMiB": {
+        "max": 664.5390625
+      },
+      "memoryPodMiB": {
+        "max": 88.78515625
+      },
+      "cpuTotalPercent": {
+        "avg": 354.618886730354
+      },
+      "cpuPodPercent": {
+        "min": 43.12011890196686,
+        "max": 44.93276150436294
+      },
+      "idlePodMiB": 47.06640625,
+      "redisDataPeakMiB": 367.78438568115234,
+      "redisKeys": 5
+    }
+  ]
+}

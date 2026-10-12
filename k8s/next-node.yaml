@@ -29,12 +29,15 @@ spec:
             # The binary listens on 0.0.0.0 and reads `HOST` instead.
             - name: HOSTNAME
               value: 0.0.0.0
+          # Half a CPU per replica: 8 replicas take 4 of the node's 10 CPUs,
+          # leaving room for k6 and Redis during load tests, so the tests
+          # measure the app and not a saturated node.
           resources:
             requests:
               cpu: 250m
               memory: 128Mi
             limits:
-              cpu: "1"
+              cpu: 500m
               memory: 512Mi
           readinessProbe:
             httpGet:

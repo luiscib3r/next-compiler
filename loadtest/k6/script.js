@@ -3,6 +3,9 @@
 //
 //   k6 run -e BASE_URL=http://localhost:8080 -e SCENARIO=static script.js
 //
+// `SUMMARY=<path>` writes the k6 summary as JSON to that path;
+// `SUMMARY=stdout` prints it after a marker (for Kubernetes Jobs).
+//
 // Closed model: VUS virtual users send requests back to back for DURATION,
 // so the result shows the maximum throughput and the latency at saturation.
 
@@ -12,6 +15,7 @@ import { check } from "k6";
 const BASE_URL = __ENV.BASE_URL ?? "http://localhost:8080";
 const SCENARIO = __ENV.SCENARIO ?? "static";
 const SUMMARY = __ENV.SUMMARY;
+const SUMMARY_MARKER = "@@K6_SUMMARY@@";
 
 export const options = {
   vus: Number(__ENV.VUS ?? 32),
@@ -79,6 +83,12 @@ export function handleSummary(data) {
   const output = {
     stdout: `${SCENARIO}: ${data.metrics.http_reqs.values.rate.toFixed(1)} req/s\n`,
   };
-  if (SUMMARY) output[SUMMARY] = JSON.stringify(data);
+  // In a Kubernetes Job there is no volume to write to: print the summary
+  // after a marker, and the runner reads it from the Job's logs.
+  if (SUMMARY === "stdout") {
+    output.stdout += `${SUMMARY_MARKER}${JSON.stringify(data)}\n`;
+  } else if (SUMMARY) {
+    output[SUMMARY] = JSON.stringify(data);
+  }
   return output;
 }
